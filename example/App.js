@@ -1,222 +1,86 @@
-import React from 'react';
+import React, { Component }  from 'react';
 import {
-  Platform,
-  StyleSheet,
   Text,
   View,
+  AppRegistry,
+  Dimensions,
+  LayoutAnimation,
+  Keyboard
 } from 'react-native';
 
-import {GiftedChat, Actions, Bubble} from 'react-native-gifted-chat';
-import CustomActions from './CustomActions';
-import CustomView from './CustomView';
+import {
+  createRouter,
+  NavigationProvider,
+  StackNavigation,
+} from '@exponent/ex-navigation';
 
-export default class Example extends React.Component {
-  constructor(props) {
-    super(props);
+
+import ChatScreen  from './chat'
+
+
+/**
+  * This is where we map route names to route components. Any React
+  * component can be a route, it only needs to have a static `route`
+  * property defined on it, as in HomeScreen below
+  */
+const Router = createRouter(() => ({
+  giftedChat: () => ChatScreen
+}));
+
+const NAVBAR_HEIGHT = 90
+
+class App extends Component {
+
+  constructor (props) {
+    super(props)
+    this._keyboardDidShow = this._keyboardDidShow.bind(this)
+    this._keyboardDidHide = this._keyboardDidHide.bind(this)
     this.state = {
-      messages: [],
-      loadEarlier: true,
-      typingText: null,
-      isLoadingEarlier: false,
-    };
-
-    this._isMounted = false;
-    this.onSend = this.onSend.bind(this);
-    this.onReceive = this.onReceive.bind(this);
-    this.renderCustomActions = this.renderCustomActions.bind(this);
-    this.renderBubble = this.renderBubble.bind(this);
-    this.renderFooter = this.renderFooter.bind(this);
-    this.onLoadEarlier = this.onLoadEarlier.bind(this);
-
-    this._isAlright = null;
-  }
-
-  componentWillMount() {
-    this._isMounted = true;
-    this.setState(() => {
-      return {
-        messages: require('./data/messages.js'),
-      };
-    });
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  onLoadEarlier() {
-    this.setState((previousState) => {
-      return {
-        isLoadingEarlier: true,
-      };
-    });
-
-    setTimeout(() => {
-      if (this._isMounted === true) {
-        this.setState((previousState) => {
-          return {
-            messages: GiftedChat.prepend(previousState.messages, require('./data/old_messages.js')),
-            loadEarlier: false,
-            isLoadingEarlier: false,
-          };
-        });
-      }
-    }, 1000); // simulating network
-  }
-
-  onSend(messages = []) {
-    this.setState((previousState) => {
-      return {
-        messages: GiftedChat.append(previousState.messages, messages),
-      };
-    });
-
-    // for demo purpose
-    this.answerDemo(messages);
-  }
-
-  answerDemo(messages) {
-    if (messages.length > 0) {
-      if ((messages[0].image || messages[0].location) || !this._isAlright) {
-        this.setState((previousState) => {
-          return {
-            typingText: 'React Native is typing'
-          };
-        });
-      }
+      visibleHeight: Dimensions.get('window').height - NAVBAR_HEIGHT,
+      padding: 0,
     }
-
-    setTimeout(() => {
-      if (this._isMounted === true) {
-        if (messages.length > 0) {
-          if (messages[0].image) {
-            this.onReceive('Nice picture!');
-          } else if (messages[0].location) {
-            this.onReceive('My favorite place');
-          } else {
-            if (!this._isAlright) {
-              this._isAlright = true;
-              this.onReceive('Alright');
-            }
-          }
-        }
-      }
-
-      this.setState((previousState) => {
-        return {
-          typingText: null,
-        };
-      });
-    }, 1000);
   }
 
-  onReceive(text) {
-    this.setState((previousState) => {
-      return {
-        messages: GiftedChat.append(previousState.messages, {
-          _id: Math.round(Math.random() * 1000000),
-          text: text,
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: 'React Native',
-            // avatar: 'https://facebook.github.io/react/img/logo_og.png',
-          },
-        }),
-      };
-    });
+  componentWillMount () {
+    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
+    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
   }
 
-  renderCustomActions(props) {
-    if (Platform.OS === 'ios') {
-      return (
-        <CustomActions
-          {...props}
-        />
-      );
-    }
-    const options = {
-      'Action 1': (props) => {
-        alert('option 1');
-      },
-      'Action 2': (props) => {
-        alert('option 2');
-      },
-      'Cancel': () => {},
-    };
-    return (
-      <Actions
-        {...props}
-        options={options}
-      />
-    );
+  componentWillUnmount () {
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
   }
 
-  renderBubble(props) {
-    return (
-      <Bubble
-        {...props}
-        wrapperStyle={{
-          left: {
-            backgroundColor: '#f0f0f0',
-          }
-        }}
-      />
-    );
+  _keyboardDidShow (e) {
+   // Animation types easeInEaseOut/linear/spring
+
+    let visibleHeight = Dimensions.get('window').height - e.endCoordinates.height
+    this.setState({
+      visibleHeight: visibleHeight,
+      padding: e.endCoordinates.height
+    })
   }
 
-  renderCustomView(props) {
-    return (
-      <CustomView
-        {...props}
-      />
-    );
+  _keyboardDidHide (e) {
+    // Animation types easeInEaseOut/linear/spring
+
+    this.setState({
+      visibleHeight: Dimensions.get('window').height - NAVBAR_HEIGHT,
+      padding: 0
+    })
   }
 
-  renderFooter(props) {
-    if (this.state.typingText) {
-      return (
-        <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>
-            {this.state.typingText}
-          </Text>
-        </View>
-      );
-    }
-    return null;
-  }
+
 
   render() {
     return (
-      <GiftedChat
-        messages={this.state.messages}
-        onSend={this.onSend}
-        loadEarlier={this.state.loadEarlier}
-        onLoadEarlier={this.onLoadEarlier}
-        isLoadingEarlier={this.state.isLoadingEarlier}
-
-        user={{
-          _id: 1, // sent messages should have same user._id
-        }}
-
-        renderActions={this.renderCustomActions}
-        renderBubble={this.renderBubble}
-        renderCustomView={this.renderCustomView}
-        renderFooter={this.renderFooter}
-      />
+      <NavigationProvider router={Router}>
+        <View style={{flex:1, height:this.state.visibleHeight, paddingTop:this.state.padding}}>
+          <StackNavigation initialRoute={Router.getRoute('giftedChat')} />
+        </View>
+      </NavigationProvider>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  footerContainer: {
-    marginTop: 5,
-    marginLeft: 10,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#aaa',
-  },
-});
+AppRegistry.registerComponent('ExNavigationGiftedChat', () => App);

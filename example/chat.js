@@ -4,13 +4,31 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity
 } from 'react-native';
 
 import {GiftedChat, Actions, Bubble} from 'react-native-gifted-chat';
-import CustomActions from './CustomActions';
 import CustomView from './CustomView';
 
+
+const button = (text) => (
+  <TouchableOpacity>
+    <View><Text style={{fontSize:35}}> {text} </Text></View>
+  </TouchableOpacity>
+)
+
+
 export default class Example extends React.Component {
+  static route = {
+    navigationBar: {
+      title: 'Chat Screen Title',
+      renderRight: () => button('right'),
+      renderLeft: () => button('left')
+
+    }
+  }
+
+
   constructor(props) {
     super(props);
     this.state = {
@@ -194,17 +212,15 @@ export default class Example extends React.Component {
         loadEarlier={this.state.loadEarlier}
         onLoadEarlier={this.onLoadEarlier}
         isLoadingEarlier={this.state.isLoadingEarlier}
-
         user={{
           _id: 1, // sent messages should have same user._id
         }}
-
-        renderActions={this.renderCustomActions}
+        // renderActions={this.renderCustomActions}
         renderBubble={this.renderBubble}
         renderCustomView={this.renderCustomView}
         renderFooter={this.renderFooter}
       />
-    );
+    )
   }
 }
 

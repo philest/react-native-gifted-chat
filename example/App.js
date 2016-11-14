@@ -5,7 +5,8 @@ import {
   AppRegistry,
   Dimensions,
   LayoutAnimation,
-  Keyboard
+  Keyboard,
+  UIManager
 } from 'react-native';
 
 import {
@@ -13,6 +14,8 @@ import {
   NavigationProvider,
   StackNavigation,
 } from '@exponent/ex-navigation';
+
+UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true)
 
 
 import ChatScreen  from './chat'
@@ -28,15 +31,19 @@ const Router = createRouter(() => ({
 }));
 
 const NAVBAR_HEIGHT = 90
+const MAGIC_NUMBER = 2
 
-class App extends Component {
+// we handle the keyboard avoids, and this was completely inspired by the solution
+// found here: https://github.com/leecade/rn-notes/issues/13
+
+export default class App extends Component {
 
   constructor (props) {
     super(props)
     this._keyboardDidShow = this._keyboardDidShow.bind(this)
     this._keyboardDidHide = this._keyboardDidHide.bind(this)
     this.state = {
-      visibleHeight: Dimensions.get('window').height - NAVBAR_HEIGHT,
+      visibleHeight: Dimensions.get('window').height -NAVBAR_HEIGHT,
       padding: 0,
     }
   }
@@ -54,18 +61,20 @@ class App extends Component {
   _keyboardDidShow (e) {
    // Animation types easeInEaseOut/linear/spring
 
+    const config = LayoutAnimation.create(25, LayoutAnimation.Types.linear, LayoutAnimation.Properties.opacity)
+    LayoutAnimation.configureNext(config)
     let visibleHeight = Dimensions.get('window').height - e.endCoordinates.height
     this.setState({
       visibleHeight: visibleHeight,
-      padding: e.endCoordinates.height
+      padding: e.endCoordinates.height - MAGIC_NUMBER
     })
   }
 
   _keyboardDidHide (e) {
     // Animation types easeInEaseOut/linear/spring
-
+    // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
     this.setState({
-      visibleHeight: Dimensions.get('window').height - NAVBAR_HEIGHT,
+      visibleHeight: Dimensions.get('window').height  - NAVBAR_HEIGHT,
       padding: 0
     })
   }
@@ -82,5 +91,3 @@ class App extends Component {
     );
   }
 }
-
-AppRegistry.registerComponent('ExNavigationGiftedChat', () => App);

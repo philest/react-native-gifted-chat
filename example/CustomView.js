@@ -47,6 +47,7 @@ export default class CustomView extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
+    flex:1
   },
   mapView: {
     width: 150,

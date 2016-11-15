@@ -1,15 +1,19 @@
-import React from 'react';
+import React from 'react'
 import {
   Platform,
   StyleSheet,
   Text,
   View,
-  TouchableOpacity
-} from 'react-native';
+  TouchableOpacity,
+  StatusBar
+} from 'react-native'
 
-import {GiftedChat, Actions, Bubble} from 'react-native-gifted-chat';
-import CustomView from './CustomView';
 
+
+import { GiftedChat, Actions, Bubble, Avatar} from 'react-native-gifted-chat';
+import CustomActions from './CustomActions'
+import CustomView from './CustomView'
+import CustomBubble from './CustomBubble'
 
 const button = (text) => (
   <TouchableOpacity>
@@ -45,7 +49,6 @@ export default class Example extends React.Component {
     this.renderBubble = this.renderBubble.bind(this);
     this.renderFooter = this.renderFooter.bind(this);
     this.onLoadEarlier = this.onLoadEarlier.bind(this);
-
     this._isAlright = null;
   }
 
@@ -154,11 +157,11 @@ export default class Example extends React.Component {
       );
     }
     const options = {
-      'Action 1': (props) => {
-        alert('option 1');
+      'Get New Story': (props) => {
+
       },
-      'Action 2': (props) => {
-        alert('option 2');
+      'Reset': (props) => {
+
       },
       'Cancel': () => {},
     };
@@ -171,14 +174,10 @@ export default class Example extends React.Component {
   }
 
   renderBubble(props) {
+
     return (
-      <Bubble
+      <CustomBubble
         {...props}
-        wrapperStyle={{
-          left: {
-            backgroundColor: '#f0f0f0',
-          }
-        }}
       />
     );
   }
@@ -204,23 +203,35 @@ export default class Example extends React.Component {
     return null;
   }
 
+  renderAvatar(props) {
+    if (props.currentMessage.newStory) {
+      return null
+    }
+    return <Avatar {...props} />
+  }
+
   render() {
     return (
-      <GiftedChat
+      <View style={{flex:1}}>
+        <StatusBar />
+        <GiftedChat
+
         messages={this.state.messages}
         onSend={this.onSend}
-        loadEarlier={this.state.loadEarlier}
-        onLoadEarlier={this.onLoadEarlier}
-        isLoadingEarlier={this.state.isLoadingEarlier}
+        // loadEarlier={this.state.loadEarlier}
+        // onLoadEarlier={this.onLoadEarlier}
+        // isLoadingEarlier={this.state.isLoadingEarlier}
         user={{
           _id: 1, // sent messages should have same user._id
         }}
-        // renderActions={this.renderCustomActions}
+        renderActions={this.renderCustomActions}
         renderBubble={this.renderBubble}
         renderCustomView={this.renderCustomView}
         renderFooter={this.renderFooter}
-      />
-    )
+        renderAvatar={this.renderAvatar}
+        />
+      </View>
+    );
   }
 }
 

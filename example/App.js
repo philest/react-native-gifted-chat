@@ -6,7 +6,7 @@ import {
   Dimensions,
   LayoutAnimation,
   Keyboard,
-  UIManager
+  UIManager,
 } from 'react-native';
 
 import {
@@ -66,7 +66,7 @@ export default class App extends Component {
     let visibleHeight = Dimensions.get('window').height - e.endCoordinates.height
     this.setState({
       visibleHeight: visibleHeight,
-      padding: e.endCoordinates.height - MAGIC_NUMBER
+
     })
   }
 
@@ -75,7 +75,7 @@ export default class App extends Component {
     // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
     this.setState({
       visibleHeight: Dimensions.get('window').height  - NAVBAR_HEIGHT,
-      padding: 0
+
     })
   }
 
@@ -84,7 +84,7 @@ export default class App extends Component {
   render() {
     return (
       <NavigationProvider router={Router}>
-        <View style={{flex:1, height:this.state.visibleHeight, paddingTop:this.state.padding}}>
+        <View style={{flex:1, height:this.state.visibleHeight}}>
           <StackNavigation initialRoute={Router.getRoute('giftedChat')} />
         </View>
       </NavigationProvider>
